@@ -2768,6 +2768,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "my_library"
+version = "0.1.0"
+dependencies = [
+ "rand",
+]
+
+[[package]]
 name = "naga"
 version = "24.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
