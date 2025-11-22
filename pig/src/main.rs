@@ -85,7 +85,7 @@ fn clear_die(hand_query: &Query<(Entity, &Sprite), With<HandDie>>, commands: &mu
 fn player(
     hand_query: Query<(Entity, &Sprite), With<HandDie>>,
     mut commands: Commands,
-    mut rng: ResMut<RandomNumberGenerator>,
+    rng: Res<RandomNumberGenerator>,
     assets: Res<GameAssets>,
     mut scores: ResMut<Scores>,
     mut state: ResMut<NextState<GamePhase>>,
@@ -124,7 +124,7 @@ fn player(
 fn cpu(
     hand_query: Query<(Entity, &Sprite), With<HandDie>>,
     mut commands: Commands,
-    mut rng: ResMut<RandomNumberGenerator>,
+    rng: Res<RandomNumberGenerator>,
     assets: Res<GameAssets>,
     mut scores: ResMut<Scores>,
     mut state: ResMut<NextState<GamePhase>>,
