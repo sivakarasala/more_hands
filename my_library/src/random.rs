@@ -1,23 +1,29 @@
-use rand::{
-    Rng, SeedableRng,
-    distributions::uniform::{SampleRange, SampleUniform},
-    prelude::StdRng,
-};
+use rand::{Rng, SeedableRng, distributions::uniform::{SampleRange, SampleUniform}};
 
+#[cfg(all(not(feature = "pcg"), not(feature = "xorshift")))]
+type RngCore = rand::prelude::StdRng;
+
+#[cfg(feature = "pcg")]
+type RngCore = rand_pcg::Pcg64Mcg;
+
+#[cfg(feature = "xorshift")]
+type RngCore = rand_xorshift::XorShiftRng;
+
+#[derive(bevy::prelude::Resource)]
 pub struct RandomNumberGenerator {
-    rng: StdRng,
+    rng: RngCore,
 }
 
 impl RandomNumberGenerator {
     pub fn new() -> Self {
         Self {
-            rng: StdRng::from_entropy(),
+            rng: RngCore::from_entropy(),
         }
     }
 
     pub fn seeded(seed: u64) -> Self {
         Self {
-            rng: StdRng::seed_from_u64(seed),
+            rng: RngCore::seed_from_u64(seed),
         }
     }
 
@@ -86,5 +92,13 @@ mod test {
             assert!(n > -5000.0);
             assert!(n < 5000.0);
         }
+    }
+}
+
+pub struct RandomPlugin;
+
+impl bevy::prelude::Plugin for RandomPlugin {
+    fn build(&self, app: &mut bevy::prelude::App) {
+        app.insert_resource(RandomNumberGenerator::new());
     }
 }

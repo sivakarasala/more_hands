@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::{EguiContexts, EguiPlugin, egui};
-use my_library::RandomNumberGenerator;
+use my_library::{RandomNumberGenerator, RandomPlugin};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default, States)]
 enum GamePhase {
@@ -25,9 +25,6 @@ struct Scores {
 struct HandDie;
 
 #[derive(Resource)]
-struct Random(RandomNumberGenerator);
-
-#[derive(Resource)]
 struct HandTimer(Timer);
 
 fn setup(
@@ -46,7 +43,6 @@ fn setup(
         layout: texture_atlas_layout,
     });
     commands.insert_resource(Scores { cpu: 0, player: 0 });
-    commands.insert_resource(Random(RandomNumberGenerator::new()));
     commands.insert_resource(HandTimer(Timer::from_seconds(0.5, TimerMode::Repeating)));
 }
 
@@ -89,7 +85,7 @@ fn clear_die(hand_query: &Query<(Entity, &Sprite), With<HandDie>>, commands: &mu
 fn player(
     hand_query: Query<(Entity, &Sprite), With<HandDie>>,
     mut commands: Commands,
-    mut rng: ResMut<Random>,
+    mut rng: ResMut<RandomNumberGenerator>,
     assets: Res<GameAssets>,
     mut scores: ResMut<Scores>,
     mut state: ResMut<NextState<GamePhase>>,
@@ -103,7 +99,7 @@ fn player(
         ui.label(&format!("Score for this hand: {hand_score}"));
 
         if ui.button("Roll Dice").clicked() {
-            let new_roll = rng.0.range(1..7);
+            let new_roll = rng.range(1..7);
             if new_roll == 1 {
                 // End turn!
                 clear_die(&hand_query, &mut commands);
@@ -128,7 +124,7 @@ fn player(
 fn cpu(
     hand_query: Query<(Entity, &Sprite), With<HandDie>>,
     mut commands: Commands,
-    mut rng: ResMut<Random>,
+    mut rng: ResMut<RandomNumberGenerator>,
     assets: Res<GameAssets>,
     mut scores: ResMut<Scores>,
     mut state: ResMut<NextState<GamePhase>>,
@@ -142,7 +138,7 @@ fn cpu(
             .map(|(_, ts)| ts.texture_atlas.as_ref().unwrap().index + 1)
             .sum();
         if hand_total < 20 && scores.cpu + hand_total < 100 {
-            let new_roll = rng.0.range(1..=6);
+            let new_roll = rng.range(1..=6);
             if new_roll == 1 {
                 clear_die(&hand_query, &mut commands);
                 state.set(GamePhase::Player);
@@ -171,6 +167,7 @@ fn main() {
         .add_plugins(EguiPlugin {
             enable_multipass_for_primary_context: false,
         })
+        .add_plugins(RandomPlugin)
         .add_systems(Startup, setup)
         .init_state::<GamePhase>()
         .add_systems(Update, display_score)
